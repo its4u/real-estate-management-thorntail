@@ -1,0 +1,196 @@
+openapi: 3.0.1
+info:
+  version: 1.0.0
+  title: Real Estate Management
+  description: 'A sample API that uses real estate management to demonstrate microservices architecture'
+  contact:
+    name: ITS4U Luxembourg
+    url: http://its4u.com
+    email: contact@its4u.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+paths:
+  /properties:
+    get:
+      summary: List all real estate properties
+      operationId: listRealEstateProperties
+      tags:
+        - real-estate-properties
+      parameters:
+        - name: limit
+          in: query
+          description: How many real estate properties to return at one time (max 100)
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: A paged array of real estate properties
+          headers:
+            x-next:
+              description: A link to the next page of responses
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RealEstatePropertiesPage"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      summary: Register a real estate property
+      operationId: createRealEstateProperty
+      tags:
+        - real-estate-properties
+      requestBody:
+        description: Real estate property to register
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewRealEstateProperty'
+      responses:
+        '201':
+          description: Real estate property response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RealEstateProperty'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /property/{id}:
+    get:
+      summary: Show details of a specific real estate property
+      operationId: showRealEstatePropertyById
+      tags:
+        - real-estate-properties
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifier of real estate property to retrieve
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RealEstateProperty"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      summary: Update a single real estate property
+      operationId: updateRealEstateProperty
+      tags:
+        - real-estate-properties
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of real estate property to delete
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewRealEstateProperty'
+      responses:
+        '200':
+          description: Real estate property updated
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Delete a single real estate property
+      operationId: deleteRealEstateProperty
+      tags:
+        - real-estate-properties
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of real estate property to delete
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Real estate property deleted
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    RealEstateProperty:
+      allOf:
+        - $ref: '#/components/schemas/NewRealEstateProperty'
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          format: uuid
+    NewRealEstateProperty:
+      required:
+        - address
+        - city
+        - category
+        - size
+        - bedroom-count
+      properties:
+        address:
+          type: string
+          description: Full address (number, street, floor, and so)
+        city:
+          type: string
+          description: Location
+        category:
+          type: string
+          description: Classification (apartment, house, duplex, and so on)
+        size:
+          type: integer
+          format: int32
+          description: Size in square meters
+        bedroom-count:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Number of bedrooms
+    RealEstatePropertiesPage:
+      type: array
+      items:
+        $ref: "#/components/schemas/RealEstateProperty"
+    Error:
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
