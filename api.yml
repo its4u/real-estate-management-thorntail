@@ -132,12 +132,12 @@ components:
       required:
         - code
         - message
-        properties:
-          code:
-            type: integer
-            format: int32
-          message:
-            type: string
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
   parameters:
     propertyId:
       name: propertyId
