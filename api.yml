@@ -18,31 +18,17 @@ paths:
       tags:
         - real-estate-properties
       parameters:
-        - name: limit
-          in: query
-          description: How many real estate properties to return at one time (max 100)
-          required: false
-          schema:
-            type: integer
-            format: int32
+        - $ref: '#/components/parameters/pageSize'
+        - $ref: '#/components/parameters/pageNumber'
       responses:
         '200':
           description: A paged array of real estate properties
-          headers:
-            x-next:
-              description: A link to the next page of responses
-              schema:
-                type: string
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RealEstatePropertiesPage"
+                $ref: "#/components/schemas/RealEstateProperties"
         default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: '#/components/responses/ErrorResponse'
     post:
       summary: Register a real estate property
       operationId: createRealEstateProperty
@@ -54,114 +40,72 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NewRealEstateProperty'
+              $ref: '#/components/schemas/RealEstateProperty'
       responses:
         '201':
-          description: Real estate property response
+          description: Real estate property registered
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RealEstateProperty'
         default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  /property/{id}:
+          $ref: '#/components/responses/ErrorResponse'
+  /property/{propertyId}:
+    parameters:
+      - $ref: '#/components/parameters/propertyId'
     get:
       summary: Show details of a specific real estate property
       operationId: showRealEstatePropertyById
       tags:
         - real-estate-properties
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Identifier of real estate property to retrieve
-          schema:
-            type: string
       responses:
         '200':
-          description: Expected response to a valid request
+          description: Real estate property details
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/RealEstateProperty"
         default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-    post:
+          $ref: '#/components/responses/ErrorResponse'
+    put:
       summary: Update a single real estate property
       operationId: updateRealEstateProperty
       tags:
         - real-estate-properties
-      parameters:
-        - name: id
-          in: path
-          description: Identifier of real estate property to delete
-          required: true
-          schema:
-            type: string
-            format: uuid
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NewRealEstateProperty'
+              $ref: '#/components/schemas/RealEstateProperty'
       responses:
         '200':
           description: Real estate property updated
         default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/ErrorResponse'
     delete:
       summary: Delete a single real estate property
       operationId: deleteRealEstateProperty
       tags:
         - real-estate-properties
-      parameters:
-        - name: id
-          in: path
-          description: Identifier of real estate property to delete
-          required: true
-          schema:
-            type: string
-            format: uuid
       responses:
         '204':
           description: Real estate property deleted
         default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/ErrorResponse'
 components:
   schemas:
     RealEstateProperty:
-      allOf:
-        - $ref: '#/components/schemas/NewRealEstateProperty'
       required:
         - id
-      properties:
-        id:
-          type: string
-          format: uuid
-    NewRealEstateProperty:
-      required:
         - address
         - city
         - category
         - size
         - bedroom-count
       properties:
+        id:
+          type: string
+          format: uuid
         address:
           type: string
           description: Full address (number, street, floor, and so)
@@ -180,7 +124,7 @@ components:
           format: int32
           minimum: 1
           description: Number of bedrooms
-    RealEstatePropertiesPage:
+    RealEstateProperties:
       type: array
       items:
         $ref: "#/components/schemas/RealEstateProperty"
@@ -188,9 +132,39 @@ components:
       required:
         - code
         - message
-      properties:
-        code:
-          type: integer
-          format: int32
-        message:
-          type: string
+        properties:
+          code:
+            type: integer
+            format: int32
+          message:
+            type: string
+  parameters:
+    propertyId:
+      name: propertyId
+      in: path
+      required: true
+      description: The real estate identifier path parameter
+      schema:
+        type: string
+        format: uuid
+    pageSize:
+      name: pageSize
+      in: query
+      description: Number of items returned query parameter
+      schema:
+        type: integer
+        minimum: 0
+    pageNumber:
+      name: pageNumber
+      in: query
+      description: Page number query parameter
+      schema:
+        type: integer
+        minimum: 0
+  responses:
+    ErrorResponse:
+      description: An unexpected error occured
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
